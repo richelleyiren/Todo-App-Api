@@ -1,0 +1,19 @@
+# POST http://localhost:3010/users/signup
+# Content-Type: application/json
+
+# {
+#     "email":"try9@gmail.com",
+#     "password":"try1234"
+#  }
+
+ POST http://localhost:3010/users/login
+Content-Type: application/json
+
+{
+    "email":"try5@gmail.com",
+    "password":"try1234"
+ }
+
+
+
+
