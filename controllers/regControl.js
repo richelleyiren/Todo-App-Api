@@ -42,10 +42,8 @@ const saveUser = async (req, res) => {
  
   try {
     const { email, password } = req.body;
-      console.log("better work");
+     
     const user = await regModel.findOne({ email });
-
-  
 
     if (user) {
       const isSame = await bcrypt.compare(password, user.password);
@@ -168,7 +166,7 @@ const passwordReset = async (req,res)=>{
           to: `${email}`,
           subject: "Reset Password ",
           text: ` Click this link to reset your password :
-        http://localhost:3000/reset-password/${resetToken}`,
+        http://localhost:3000/reset-forgotten/${resetToken}`,
         };
         
       
@@ -183,6 +181,26 @@ const passwordReset = async (req,res)=>{
     }
   };
 
+  //resetting forgotten password
+  const resetForgotten = async (req, res) => {
+
+  try {
+    //checking for token sent to the mail
+  const { resetToken } = req.params
+  const {newpass } = req.body
+
+  const hashed = await bcrypt.hash(newpass, 10)
+  
+  const updateUser = await regModel.findOneAndUpdate({ resetToken }, {password: hashed}, {new: true} )
+     console.log(updateUser);
+      res.status(200).send(updateUser)
+
+  } catch (error) {
+    console.log(error)
+  }
+  
+}
+
 
 
 
@@ -193,6 +211,6 @@ module.exports = {
   logout,
   usersTodos,
   forgottenPassword,
-  // resetPassword,
+  resetForgotten,
   passwordReset,
 };

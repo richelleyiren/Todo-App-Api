@@ -18,9 +18,11 @@ router.get("/logout", regControl.logout)
 
 // router.put("/reset-password", regControl.resetPassword);
 
-router.post("/reset", regControl.passwordReset);
+router.post("/reset/:id", regControl.passwordReset);
 
 router.put("/forgotten-password/:email", regControl.forgottenPassword);
+
+router.put("/reset-forgotten/:resetToken", regControl.resetForgotten);
 
 router.post("/mail", sendMail);
 
