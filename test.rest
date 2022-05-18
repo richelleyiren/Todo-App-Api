@@ -2,18 +2,33 @@
 # Content-Type: application/json
 
 # {
-#     "email":"try9@gmail.com",
-#     "password":"try1234"
+#     "email":"ash@gmail.com",
+#     "password":"donaldtrump"
 #  }
 
- POST http://localhost:3010/users/login
+# POST http://localhost:3010/users/login
+# Content-Type: application/json
+
+# {
+#     "email":"richelleyiren@gmail.com",
+#     "password":"richelle"
+# }
+
+
+
+POST  http://localhost:3010/users/forgotten-password/richelleyiren@mail.com
 Content-Type: application/json
 
 {
-    "email":"try5@gmail.com",
-    "password":"try1234"
- }
+    "email":"richelleyiren@gmail.com"
+    
+}
 
 
 
+# POST http://localhost:3010/todos/6282aa262aed81da1b4345d5
+# Content-Type: application/json
 
+# {
+#     "todo":"cook"
+# }

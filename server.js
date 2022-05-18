@@ -49,37 +49,7 @@ mongoose
 
 // middleware for routers
 app.use("/users", regRoute);
-app.use("/", todoRoute);
+app.use( todoRoute);
 
-app.post('/mailer',(req,res) => {
-  const {email} = req.body
-
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "richelleyiren@gmail.com",
-      pass: "elrqyscmxqtigvpw",
-    },
-  });
-
-  const mailOptions = {
-    from: "richelleyiren@gmail.com",
-    to: `${email}`,
-    subject: "Sending Email using Node.js",
-    text: "yay!, it worked",
-    // html: "<b> Hello World</>"
-  };
-  
-
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
-
-  res.send('email sent, check your mail')
-})
 
 app.listen(PORT, () => console.log(`server running on port ${PORT} `));

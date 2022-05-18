@@ -44,7 +44,7 @@ const fetchTodos = (req, res) => {
     });
 };
 
-//fetching only one particular todo from the database or mongodb server
+//fetching a todo
 
 const fetchTodo =  async (req, res) => {
   try{
@@ -83,6 +83,7 @@ const updateTodo = (req, res) => {
     });
 };
 
+//todo
 const todoByUser = async (req,res) =>{
   try {
     const { todoId } = req.params
@@ -101,4 +102,5 @@ module.exports = {
   fetchTodo,
   deleteTodo,
   updateTodo,
+  todoByUser,
 };

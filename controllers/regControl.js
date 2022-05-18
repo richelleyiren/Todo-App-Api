@@ -3,6 +3,8 @@ const regModel = require("../models/regModel");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../errorHandling/userHelper");
 const jwt = require("jsonwebtoken")
+const { v4 : uuidv4 } = require('uuid')
+const nodemailer = require('nodemailer')
 
 const newUser = async (req, res) => {
   try {
@@ -64,9 +66,10 @@ const saveUser = async (req, res) => {
   }
 };
 
+//logout
 const logout = async (req, res) => {
   try {
-    res.cookies("jwt", "", {
+    res.cookie("jwt", "", {
       maxAge: -1,
     });
     res.status(200).json("success");
@@ -87,35 +90,9 @@ const usersTodos = async (req,res) =>{
   }
 }
 
-//password reset
 
-// const resetPassword = async (req,res) =>{
-//  try {
-//     const { email, password, resetPass } = req.body;
-//   const userPass = await regModel.findOne({email})
 
-//   if(userPass){
-//     const compare = await bcrypt.compare(password, userPass.password)
-
-//     const reset = {
-//       password : resetPass
-//     }
-
-//     if(compare){
-//       const salt = await bcrypt.genSalt();
-//       reset.password = await bcrypt.hash(reset.password, salt);
-//        const newPassword = await regModel.updateOne({ email:userPass.email }, reset);
-
-//        res.status(200).json({message:'Password changed',newPassword})
-       
-//     }
-
-//   }
-// } catch(error){
-//   console.log(error)
-// }
-
-// }
+// Password reset
 
 const passwordReset = async (req,res)=>{
 
@@ -140,10 +117,11 @@ const passwordReset = async (req,res)=>{
           }
 
           const hash = await bcrypt.hash(newPassword,12)
+         
 
          await regModel.findOneAndUpdate({_id:decoded.id},
             {password:hash},{new:true})
-            // console.log(update)
+            console.log( "this is the new password", newPassword)
             res.send('updated')
         }
        } catch(error){
@@ -153,6 +131,60 @@ const passwordReset = async (req,res)=>{
   }
   }
 
+  //forgotten password
+  const forgottenPassword = async (req, res) => {
+    try {
+    
+      const { email } = req.params;
+      // const id = req.params.id;
+      
+      const resetToken = uuidv4();
+      
+
+      
+      const updateUser = await regModel.findOneAndUpdate(
+        { email },
+        { resetToken },
+        { new: true }
+      );
+      console.log(updateUser);
+
+      if (!updateUser) {
+        return res.status(401).json({message:'Email cannot be found'})
+      }
+       
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "richelleyiren@gmail.com",
+            pass: "jpvwrqvaxjzkocsr",
+          },
+        });
+           
+        
+        
+        const sending = {
+          from: "richelleyiren@gmail.com",
+          to: `${email}`,
+          subject: "Reset Password ",
+          text: ` Click this link to reset your password :
+        http://localhost:3000/reset-password/${resetToken}`,
+        };
+        
+      
+
+        const request = await transporter.sendMail(sending)
+        console.log(request)
+
+        res.send('Please check your mail')
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+
 
 
 module.exports = {
@@ -160,6 +192,7 @@ module.exports = {
   saveUser,
   logout,
   usersTodos,
+  forgottenPassword,
   // resetPassword,
   passwordReset,
 };
