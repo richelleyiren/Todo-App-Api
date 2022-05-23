@@ -1,6 +1,7 @@
 //importing modules
 
 const nodemailer = require("nodemailer");
+const regModel = require("../models/regModel");
 
 //sending mail
 const sendMail = (req, res) => {
@@ -35,6 +36,20 @@ const sendMail = (req, res) => {
   });
 };
 
+const verifyEmail = async(req,res,next) =>{ 
+try{
+   const user = await regModel.findOne({email:req.body.email})
+   if(user.verified === true){
+     next
+   }else{
+     console.log('please check your mail to verify your account')
+   }
+}catch(error){
+  console.log(error)
+}
+}
+
 module.exports = {
   sendMail,
+  verifyEmail
 };

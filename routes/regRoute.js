@@ -6,7 +6,7 @@ const regControl = require("../controllers/regControl");
 
 const mailing = require("../email/sendMail");
 
-const { sendMail } = mailing;
+const { sendMail, verifyEmail } = mailing;
 
 
 //routes
@@ -18,12 +18,14 @@ router.get("/logout", regControl.logout)
 
 // router.put("/reset-password", regControl.resetPassword);
 
-router.post("/reset/:id", regControl.passwordReset);
+router.post("/reset/:resetToken", regControl.passwordReset);
 
 router.put("/forgotten-password/:email", regControl.forgottenPassword);
 
 router.put("/reset-forgotten/:resetToken", regControl.resetForgotten);
 
 router.post("/mail", sendMail);
+
+router.get('/verified-email/:confirmToken', regControl.emailVerified)
 
 module.exports = router;

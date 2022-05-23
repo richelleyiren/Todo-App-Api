@@ -19,12 +19,31 @@ const SignupSchema = new Schema({
   todos: [
     {
       type: Schema.Types.ObjectId,
-      ref:'Todolist'
+      ref: "Todolist",
     },
   ],
+
+  resetToken: {
+    type: String,
+  },
+  
+  verifyToken:{
+    type:String
+  },
+
+   verified:{
+     type:Boolean,
+     
+     
+   }
 });
 
 SignupSchema.pre("save", async function (next) {
+  if( this.password.length > 50){
+    next()
+
+  }
+
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(this.password, salt);
   next();

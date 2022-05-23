@@ -5,14 +5,19 @@ const { generateToken } = require("../errorHandling/userHelper");
 const jwt = require("jsonwebtoken")
 const { v4 : uuidv4 } = require('uuid')
 const nodemailer = require('nodemailer')
+const crypto = require('crypto')
+
 
 const newUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
 
     const newuser = new regModel({
       email,
       password,
+      verifyToken:crypto.randomBytes(64).toString('hex'),
+      verified: false,
     });
 
     const user = await newuser.save();
@@ -23,18 +28,75 @@ const newUser = async (req, res) => {
       const token = generateToken(user._id);
 
       //use token to set cookie
-      res.cookie("jwt", token, { maxAge: 3 * 24 * 60 * 60, httpOnly: true });
+      // res.cookie("jwt", token, { maxAge: 3 * 24 * 60 * 60, httpOnly: true });
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "richelleyiren@gmail.com",
+          pass: "jpvwrqvaxjzkocsr",
+        },
+      });
+      const confirmToken = newuser.verifyToken;
+
+      const sendingg = {
+        from: "richelleyiren@gmail.com",
+        to: newuser.email,
+        subject: "Verify Email ",
+        text: ` Welcome to the tickytasky team!, please Click this link to confirm your email :
+        http://localhost:3000/verified-email/${confirmToken}`,
+      };
+
+      //sending mail
+      transporter.sendMail(sendingg, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+
+        res.send(info);
+      });
+
+      res.status(201).json({ user });
+
+      console.log("worked");
 
       console.log(token);
       console.log("user created");
     }
 
-    res.status(201).json({ user });
-    console.log(user);
+    //send verification mail to user 
+
+    
   } catch (error) {
     console.log(error);
   }
 };
+
+
+//verified
+const emailVerified = async (req,res)=>{
+  try{
+  //  const { confirmTokenn } = req.params;
+  const {token} = req.params
+    const person = await regModel.findOne({emailToken:token})
+    if(person){
+      person.verifyToken = null
+      person.verified = true
+     
+      await person.save()
+      
+      console.log("email verification worked")
+      
+    }else{
+      console.log('verify email please')
+    }
+
+  }catch(error){
+    console.log(error)
+  }
+
+}
 
 //login
 
@@ -45,17 +107,38 @@ const saveUser = async (req, res) => {
      
     const user = await regModel.findOne({ email });
 
+    // console.log(user)
     if (user) {
-      const isSame = await bcrypt.compare(password, user.password);
+     
+      const verifyCheck = user.verified;
 
-      if (isSame) {
-        const token = generateToken(user._id);
-        res.cookie("jwt", token, { maxAge: 3 * 24 * 60 * 60, httpOnly: true });
-        res.status(200).json({ user: user });
+      if (verifyCheck) {
+         
+        const isSame = await bcrypt.compare(password, user.password);
+         console.log(isSame);
+        if (isSame) {
+           
+
+          const token = generateToken(user._id);
+          res.cookie("jwt", token, {
+            maxAge: 3 * 24 * 60 * 60,
+            httpOnly: true,
+          });
+          res.status(200).json({ user });
+        } else{
+          console.log("nope")
+          res.json({message:"failed to log"})
+        }
       } else {
-        res.json({ errors: "Incorrect Password" });
+        res.status(401).json({ errors: "Failed" });
       }
-    } else {
+    } else if(!user.verified){
+      return res
+          .status(400)
+          .send({
+            msg: "Please check your mail to verify your account",
+          });
+    }else {
       res.json({ errors: " E-mail doesn't exist please sign up" });
     }
   } catch (error) {
@@ -165,7 +248,7 @@ const passwordReset = async (req,res)=>{
           from: "richelleyiren@gmail.com",
           to: `${email}`,
           subject: "Reset Password ",
-          text: ` Click this link to reset your password :
+          text: ` Kindly click on the link to reset your forgotten password :
         http://localhost:3000/reset-forgotten/${resetToken}`,
         };
         
@@ -213,4 +296,5 @@ module.exports = {
   forgottenPassword,
   resetForgotten,
   passwordReset,
+  emailVerified,
 };
